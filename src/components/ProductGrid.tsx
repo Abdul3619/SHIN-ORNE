@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ShoppingBag, Heart } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { useCart } from '../context/CartContext';
 
 interface Product {
   id: number;
@@ -15,6 +16,7 @@ export default function ProductGrid() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { formatPrice, convertPrice } = useCurrency();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     fetch('/api/products')
@@ -25,20 +27,8 @@ export default function ProductGrid() {
       });
   }, []);
 
-  const handleBuy = async (product: Product) => {
-    // Simulate creating an order when Add to Cart is clicked
-    if (confirm(`Purchase ${product.name} for ${formatPrice(product.price)}?`)) {
-      await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_name: 'Guest User',
-          customer_email: 'guest@example.com',
-          total: convertPrice(product.price)
-        })
-      });
-      alert('Order placed successfully! Check the Admin Dashboard.');
-    }
+  const handleBuy = (product: Product) => {
+    addToCart(product);
   };
 
   if (loading) return <div className="py-24 text-center">Loading products...</div>;

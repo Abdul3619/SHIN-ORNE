@@ -45,14 +45,14 @@ const { count } = stmt.get() as { count: number };
 if (count === 0) {
   const insert = db.prepare("INSERT INTO products (name, price, image, category) VALUES (?, ?, ?, ?)");
   const initialProducts = [
-    ['Golden Aura Necklace', 129.00, 'https://picsum.photos/seed/prod1/500/600', 'Necklaces'],
-    ['Emerald Bead Bracelet', 89.00, 'https://picsum.photos/seed/prod2/500/600', 'Bracelets'],
-    ['Pearl Drop Earrings', 149.00, 'https://picsum.photos/seed/prod3/500/600', 'Earrings'],
-    ['Sapphire Charm Set', 199.00, 'https://picsum.photos/seed/prod4/500/600', 'Sets'],
-    ['Ruby Pendant', 210.00, 'https://picsum.photos/seed/prod5/500/600', 'Necklaces'],
-    ['Silver Bead Chain', 75.00, 'https://picsum.photos/seed/prod6/500/600', 'Bracelets'],
-    ['Crystal Studs', 59.00, 'https://picsum.photos/seed/prod7/500/600', 'Earrings'],
-    ['Amethyst Ring', 115.00, 'https://picsum.photos/seed/prod8/500/600', 'Rings'],
+    ['Golden Aura Necklace', 129.00, 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?auto=format&fit=crop&q=80&w=800', 'Necklaces'],
+    ['Emerald Bead Bracelet', 89.00, 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=800', 'Bracelets'],
+    ['Pearl Drop Earrings', 149.00, 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=800', 'Earrings'],
+    ['Sapphire Charm Set', 199.00, 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=800', 'Sets'],
+    ['Ruby Pendant', 210.00, 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=800', 'Necklaces'],
+    ['Silver Bead Chain', 75.00, 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?auto=format&fit=crop&q=80&w=801', 'Bracelets'],
+    ['Crystal Studs', 59.00, 'https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&q=80&w=800', 'Earrings'],
+    ['Amethyst Ring', 115.00, 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&q=80&w=800', 'Rings'],
   ];
   for (const p of initialProducts) {
     insert.run(p);

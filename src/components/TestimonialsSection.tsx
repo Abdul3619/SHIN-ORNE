@@ -58,7 +58,7 @@ export default function TestimonialsSection() {
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                   <img src={`https://picsum.photos/seed/user${index}/100/100`} alt={testimonial.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                   <img src={`https://i.pravatar.cc/150?u=${testimonial.name}`} alt={testimonial.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
                 <div>
                   <span className="block text-sm font-serif font-medium text-gray-900">

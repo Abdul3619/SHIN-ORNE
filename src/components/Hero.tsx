@@ -25,7 +25,7 @@ export default function Hero() {
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          src="https://picsum.photos/seed/jewelry1/1920/1080"
+          src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=1920"
           alt="Elegant Jewelry Background"
           className="w-full h-full object-cover opacity-90"
           referrerPolicy="no-referrer"
