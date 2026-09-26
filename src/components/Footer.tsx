@@ -160,7 +160,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-gray-500 font-light">
-            &copy; {new Date().getFullYear()} Shin Orne by Charm Aura. All rights reserved. 
+            &copy; {new Date().getFullYear()} Shin Orne by Charm Aura. All rights reserved. Reviews shown are sample content.
             <a href="/admin" className="ml-4 hover:text-white transition-colors">Admin Portal</a>
           </p>
           <div className="flex gap-6">
