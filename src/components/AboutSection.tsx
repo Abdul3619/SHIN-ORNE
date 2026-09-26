@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 
 export default function AboutSection() {
   return (
-    <section className="py-24 bg-white overflow-hidden">
+    <section id="about" className="py-24 bg-white overflow-hidden scroll-mt-20">
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Image Side */}
