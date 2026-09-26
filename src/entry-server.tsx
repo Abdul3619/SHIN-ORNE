@@ -4,7 +4,8 @@ import {StaticRouter} from 'react-router-dom';
 import App from './App';
 import type {Product} from './types';
 
-export function render(url: string, products: Product[]) {
+// products is null when the database could not be reached; the storefront then loads them in the browser.
+export function render(url: string, products: Product[] | null) {
   return renderToString(
     <StrictMode>
       <StaticRouter location={url}>
