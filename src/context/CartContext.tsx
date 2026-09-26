@@ -1,12 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-}
+import type { Product } from '../types';
 
 interface CartItem {
   product: Product;

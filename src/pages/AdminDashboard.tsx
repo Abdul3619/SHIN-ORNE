@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { Package, ShoppingCart, DollarSign, Plus, Edit2, Trash2, X, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 
-interface Product {
+import type { Product } from '../types';
+
+const MIN_PASSWORD_LENGTH = 8;
+
+interface OrderItem {
   id: number;
   name: string;
   price: number;
-  image: string;
-  category: string;
+  quantity: number;
 }
 
 interface Order {
@@ -19,10 +22,33 @@ interface Order {
   total: number;
   status: string;
   created_at: string;
+  items: OrderItem[];
+}
+
+function readStoredToken() {
+  try {
+    return localStorage.getItem('adminToken');
+  } catch {
+    return null;
+  }
+}
+
+function storeToken(token: string | null) {
+  try {
+    if (token) localStorage.setItem('adminToken', token);
+    else localStorage.removeItem('adminToken');
+  } catch {
+    // Storage unavailable: the session lasts until the page is closed.
+  }
+}
+
+async function readError(res: Response, fallback: string) {
+  const data = await res.json().catch(() => ({}));
+  return data.error || fallback;
 }
 
 export default function AdminDashboard() {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('adminToken'));
+  const [token, setToken] = useState<string | null>(readStoredToken);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const { formatPrice } = useCurrency();
@@ -30,6 +56,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'settings'>('overview');
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [dashboardError, setDashboardError] = useState('');
   
   // Password Change State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -40,6 +67,8 @@ export default function AdminDashboard() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formError, setFormError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -57,10 +86,10 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     setToken(null);
-    localStorage.removeItem('adminToken');
+    storeToken(null);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setLoginError('');
     try {
@@ -69,10 +98,12 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-      const data = await res.json();
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.token) {
         setToken(data.token);
-        localStorage.setItem('adminToken', data.token);
+        storeToken(data.token);
+        setPassword('');
+        setDashboardError('');
       } else {
         setLoginError(data.error || 'Login failed');
       }
@@ -82,28 +113,49 @@ export default function AdminDashboard() {
   };
 
   const fetchProducts = async () => {
-    const res = await fetch('/api/products');
-    const data = await res.json();
-    setProducts(data);
+    try {
+      const res = await fetch('/api/products');
+      if (!res.ok) throw new Error(await readError(res, 'Could not load products.'));
+      setProducts(await res.json());
+    } catch (error: any) {
+      setDashboardError(error?.message || 'Could not load products.');
+    }
+  };
+
+  // Returns false (and signs out) when the session is no longer valid.
+  const checkSession = (res: Response) => {
+    if (res.status === 401) {
+      handleLogout();
+      setLoginError('Your session has expired. Please log in again.');
+      return false;
+    }
+    return true;
   };
 
   const fetchOrders = async () => {
-    const res = await fetch('/api/orders', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.status === 401 || res.status === 403) {
-      handleLogout();
-      return;
+    try {
+      const res = await fetch('/api/orders', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!checkSession(res)) return;
+      if (!res.ok) throw new Error(await readError(res, 'Could not load orders.'));
+      setOrders(await res.json());
+    } catch (error: any) {
+      setDashboardError(error?.message || 'Could not load orders.');
     }
-    const data = await res.json();
-    setOrders(data);
   };
 
-  const handleSaveProduct = async (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: FormEvent) => {
     e.preventDefault();
+    setFormError('');
+    const price = parseFloat(formData.price);
+    if (!Number.isFinite(price) || price <= 0) {
+      setFormError('Enter a price greater than 0.');
+      return;
+    }
     const payload = {
       name: formData.name,
-      price: parseFloat(formData.price),
+      price,
       image: formData.image,
       category: formData.category
     };
@@ -111,28 +163,45 @@ export default function AdminDashboard() {
     const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
     const method = editingProduct ? 'PUT' : 'POST';
 
-    const res = await fetch(url, {
-      method,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
+    setIsSaving(true);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-    if (res.status === 401 || res.status === 403) return handleLogout();
-    
-    setIsModalOpen(false);
-    fetchProducts();
+      if (!checkSession(res)) return;
+      if (!res.ok) {
+        setFormError(await readError(res, 'The product could not be saved.'));
+        return;
+      }
+
+      setIsModalOpen(false);
+      fetchProducts();
+    } catch {
+      setFormError('Error connecting to server');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteProduct = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      const res = await fetch(`/api/products/${id}`, { 
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.status === 401 || res.status === 403) return handleLogout();
+      setDashboardError('');
+      try {
+        const res = await fetch(`/api/products/${id}`, { 
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!checkSession(res)) return;
+        if (!res.ok) setDashboardError(await readError(res, 'The product could not be deleted.'));
+      } catch {
+        setDashboardError('Error connecting to server');
+      }
       fetchProducts();
     }
   };
@@ -150,26 +219,37 @@ export default function AdminDashboard() {
       setEditingProduct(null);
       setFormData({ name: '', price: '', image: '', category: '' });
     }
+    setFormError('');
     setIsModalOpen(true);
   };
 
   const updateOrderStatus = async (id: number, status: string) => {
-    const res = await fetch(`/api/orders/${id}/status`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ status })
-    });
-    if (res.status === 401 || res.status === 403) return handleLogout();
+    setDashboardError('');
+    try {
+      const res = await fetch(`/api/orders/${id}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      if (!checkSession(res)) return;
+      if (!res.ok) setDashboardError(await readError(res, 'The order status could not be updated.'));
+    } catch {
+      setDashboardError('Error connecting to server');
+    }
     fetchOrders();
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
+  const handleChangePassword = async (e: FormEvent) => {
     e.preventDefault();
     setPasswordMessage({ type: '', text: '' });
-    
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setPasswordMessage({ type: 'error', text: `The new password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setPasswordMessage({ type: 'error', text: 'New passwords do not match' });
       return;
@@ -184,9 +264,14 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ currentPassword, newPassword })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       
       if (res.ok) {
+        // The server signs out other sessions and returns a fresh token for this one.
+        if (data.token) {
+          setToken(data.token);
+          storeToken(data.token);
+        }
         setPasswordMessage({ type: 'success', text: 'Password updated successfully!' });
         setCurrentPassword('');
         setNewPassword('');
@@ -199,6 +284,13 @@ export default function AdminDashboard() {
     }
   };
 
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: DollarSign },
+    { id: 'products', label: 'Products', icon: Package },
+    { id: 'orders', label: 'Orders', icon: ShoppingCart },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ] as const;
+
   if (!token) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -209,9 +301,11 @@ export default function AdminDashboard() {
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input 
+                id="admin-password"
                 type="password" 
+                autoComplete="current-password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-gray-900 focus:outline-none" 
@@ -244,15 +338,10 @@ export default function AdminDashboard() {
           </div>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          {[
-            { id: 'overview', label: 'Overview', icon: DollarSign },
-            { id: 'products', label: 'Products', icon: Package },
-            { id: 'orders', label: 'Orders', icon: ShoppingCart },
-            { id: 'settings', label: 'Settings', icon: Settings },
-          ].map((item) => (
+          {tabs.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === item.id ? 'bg-[#F3E5AB] text-gray-900' : 'text-gray-600 hover:bg-gray-50'
               }`}
@@ -270,7 +359,36 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 md:p-8 min-w-0">
+        {/* The sidebar is hidden on small screens, so they get the same tabs here. */}
+        <div className="md:hidden mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-xl font-serif font-bold text-gray-900">Admin Panel</h1>
+            <button onClick={handleLogout} className="text-sm text-red-600 font-medium">
+              Logout
+            </button>
+          </div>
+          <nav className="flex gap-2 overflow-x-auto">
+            {tabs.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                  activeTab === item.id ? 'bg-[#F3E5AB] text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <item.icon size={16} />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <Link to="/" className="text-sm text-gray-500 hover:text-primary transition-colors mt-3 inline-block">
+            &larr; Back to Store
+          </Link>
+        </div>
+        {dashboardError && (
+          <p role="alert" className="mb-6 text-sm text-red-600">{dashboardError}</p>
+        )}
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -322,7 +440,7 @@ export default function AdminDashboard() {
               </button>
             </div>
             
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -343,8 +461,8 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 text-gray-900 font-medium">{formatPrice(product.price)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <button onClick={() => openModal(product)} className="text-gray-400 hover:text-blue-600"><Edit2 size={16} /></button>
-                          <button onClick={() => handleDeleteProduct(product.id)} className="text-gray-400 hover:text-red-600"><Trash2 size={16} /></button>
+                          <button onClick={() => openModal(product)} aria-label={`Edit ${product.name}`} className="text-gray-400 hover:text-blue-600"><Edit2 size={16} /></button>
+                          <button onClick={() => handleDeleteProduct(product.id)} aria-label={`Delete ${product.name}`} className="text-gray-400 hover:text-red-600"><Trash2 size={16} /></button>
                         </div>
                       </td>
                     </tr>
@@ -360,7 +478,7 @@ export default function AdminDashboard() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">Orders</h2>
             
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -380,6 +498,11 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4">
                         <p className="text-gray-900">{order.customer_name}</p>
                         <p className="text-xs text-gray-500">{order.customer_email}</p>
+                        {order.items.length > 0 && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {order.items.map(item => `${item.quantity} × ${item.name}`).join(', ')}
+                          </p>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-gray-900 font-medium">{formatPrice(order.total)}</td>
                       <td className="px-6 py-4">
@@ -393,6 +516,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <select 
+                          aria-label={`Status of order #${order.id}`}
                           className="text-sm border border-gray-200 rounded p-1"
                           value={order.status}
                           onChange={(e) => updateOrderStatus(order.id, e.target.value)}
@@ -418,9 +542,11 @@ export default function AdminDashboard() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">Change Admin Password</h3>
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                  <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
                   <input 
+                    id="current-password"
                     type="password" 
+                    autoComplete="current-password"
                     value={currentPassword}
                     onChange={e => setCurrentPassword(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-gray-900 focus:outline-none" 
@@ -428,9 +554,11 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                   <input 
+                    id="new-password"
                     type="password" 
+                    autoComplete="new-password"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-gray-900 focus:outline-none" 
@@ -438,9 +566,11 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                  <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
                   <input 
+                    id="confirm-password"
                     type="password" 
+                    autoComplete="new-password"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-gray-900 focus:outline-none" 
@@ -465,29 +595,30 @@ export default function AdminDashboard() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl w-full max-w-md p-6 relative">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-900">
+            <button onClick={() => setIsModalOpen(false)} aria-label="Close" className="absolute top-4 right-4 text-gray-400 hover:text-gray-900">
               <X size={20} />
             </button>
             <h3 className="text-xl font-serif font-bold mb-4">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
             <form onSubmit={handleSaveProduct} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
+                <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input id="product-name" required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (in USD, converts automatically)</label>
-                <input required type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
+                <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-1">Base Price (in USD, converts automatically)</label>
+                <input id="product-price" required type="number" step="0.01" min="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <input required type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
+                <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <input id="product-category" required type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                <input required type="url" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
+                <label htmlFor="product-image" className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <input id="product-image" required type="url" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full border border-gray-300 rounded-md p-2" />
               </div>
-              <button type="submit" className="w-full bg-gray-900 text-white py-2 rounded-md font-medium hover:bg-gray-800">
-                {editingProduct ? 'Save Changes' : 'Create Product'}
+              {formError && <p role="alert" className="text-sm text-red-600">{formError}</p>}
+              <button type="submit" disabled={isSaving} className="w-full bg-gray-900 text-white py-2 rounded-md font-medium hover:bg-gray-800 disabled:opacity-70">
+                {isSaving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create Product'}
               </button>
             </form>
           </div>

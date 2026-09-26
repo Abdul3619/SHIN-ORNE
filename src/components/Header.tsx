@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { ShoppingBag, Search, Menu, X, User, Minus, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCurrency } from '../context/CurrencyContext';
@@ -7,9 +7,13 @@ import { useCart } from '../context/CartContext';
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { currency, setCurrency, formatPrice, convertPrice } = useCurrency();
+  const { currency, setCurrency, formatPrice } = useCurrency();
   const { cart, cartCount, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, clearCart } = useCart();
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [checkoutError, setCheckoutError] = useState('');
+  const [orderConfirmation, setOrderConfirmation] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,24 +23,50 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleCheckout = async () => {
+  useEffect(() => {
+    if (cart.length > 0) setOrderConfirmation('');
+  }, [cart.length]);
+
+  const handleCheckout = async (e: FormEvent) => {
+    e.preventDefault();
     if (cart.length === 0) return;
+    setCheckoutError('');
+
+    const name = customerName.trim();
+    const email = customerEmail.trim();
+    if (!name) {
+      setCheckoutError('Please enter your name.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setCheckoutError('Please enter a valid email address.');
+      return;
+    }
+
     setIsCheckoutLoading(true);
     try {
-      await fetch('/api/orders', {
+      const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_name: 'Guest User',
-          customer_email: 'guest@example.com',
-          total: convertPrice(cartTotal)
+          customer_name: name,
+          customer_email: email,
+          items: cart.map(item => ({ id: item.product.id, quantity: item.quantity })),
         })
       });
-      alert('Order placed successfully! Check the Admin Dashboard.');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCheckoutError(data.error || 'We could not place your order. Please try again.');
+        return;
+      }
+      setOrderConfirmation(
+        `Thank you, ${name}! Your order #${data.id} has been received. We'll email ${email} to arrange payment and delivery.`
+      );
+      setCustomerName('');
+      setCustomerEmail('');
       clearCart();
-      setIsCartOpen(false);
     } catch (error) {
-      alert('Error placing order');
+      setCheckoutError('We could not reach the store. Please check your connection and try again.');
     } finally {
       setIsCheckoutLoading(false);
     }
@@ -73,6 +103,7 @@ export default function Header() {
         {/* Icons */}
         <div className="flex items-center gap-6">
           <select 
+            aria-label="Currency"
             value={currency} 
             onChange={(e) => setCurrency(e.target.value as 'NGN' | 'USD')}
             className="bg-transparent text-sm font-medium text-gray-700 outline-none cursor-pointer border border-gray-200 rounded px-2 py-1 hover:border-gray-300 transition-colors"
@@ -80,13 +111,15 @@ export default function Header() {
             <option value="NGN">NGN ₦</option>
             <option value="USD">USD $</option>
           </select>
-          <button className="text-gray-700 hover:text-primary transition-colors">
+          <button type="button" aria-label="Search" className="text-gray-700 hover:text-primary transition-colors">
             <Search size={20} strokeWidth={1.5} />
           </button>
-          <button className="text-gray-700 hover:text-primary transition-colors hidden sm:block">
+          <button type="button" aria-label="Account" className="text-gray-700 hover:text-primary transition-colors hidden sm:block">
             <User size={20} strokeWidth={1.5} />
           </button>
           <button 
+            type="button"
+            aria-label={`Open cart (${cartCount} items)`}
             className="text-gray-700 hover:text-primary transition-colors relative"
             onClick={() => setIsCartOpen(true)}
           >
@@ -98,6 +131,8 @@ export default function Header() {
             )}
           </button>
           <button
+            type="button"
+            aria-label="Open menu"
             className="md:hidden text-gray-700"
             onClick={() => setIsMobileMenuOpen(true)}
           >
@@ -126,7 +161,7 @@ export default function Header() {
             >
               <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
                 <h2 className="text-xl font-serif font-bold text-gray-900">Your Cart ({cartCount})</h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors">
+                <button type="button" aria-label="Close cart" onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors">
                   <X size={24} strokeWidth={1.5} />
                 </button>
               </div>
@@ -135,7 +170,11 @@ export default function Header() {
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-4">
                     <ShoppingBag size={48} strokeWidth={1} className="opacity-20" />
-                    <p>Your cart is empty.</p>
+                    {orderConfirmation ? (
+                      <p role="status" className="text-center text-gray-700">{orderConfirmation}</p>
+                    ) : (
+                      <p>Your cart is empty.</p>
+                    )}
                     <button 
                       onClick={() => setIsCartOpen(false)}
                       className="mt-4 px-6 py-2 border border-gray-900 text-gray-900 rounded-md hover:bg-gray-900 hover:text-white transition-colors"
@@ -159,6 +198,8 @@ export default function Header() {
                           <div className="flex items-center gap-3">
                             <div className="flex items-center border border-gray-200 rounded px-2 py-1">
                               <button 
+                                type="button"
+                                aria-label={`Decrease quantity of ${item.product.name}`}
                                 onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                                 className="text-gray-400 hover:text-gray-900"
                               >
@@ -166,13 +207,17 @@ export default function Header() {
                               </button>
                               <span className="px-3 text-sm">{item.quantity}</span>
                               <button 
-                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                type="button"
+                                aria-label={`Increase quantity of ${item.product.name}`}
+                                onClick={() => updateQuantity(item.product.id, Math.min(item.quantity + 1, 99))}
                                 className="text-gray-400 hover:text-gray-900"
                               >
                                 <Plus size={14} />
                               </button>
                             </div>
                             <button 
+                              type="button"
+                              aria-label={`Remove ${item.product.name} from cart`}
                               onClick={() => removeFromCart(item.product.id)}
                               className="text-gray-400 hover:text-red-500 transition-colors ml-auto"
                             >
@@ -194,17 +239,42 @@ export default function Header() {
                       {formatPrice(cartTotal)}
                     </span>
                   </div>
-                  <button 
-                    onClick={handleCheckout}
-                    disabled={isCheckoutLoading}
-                    className="w-full bg-gray-900 text-white py-4 rounded font-medium hover:bg-gray-800 transition-colors tracking-wide disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isCheckoutLoading ? (
-                      <span className="animate-pulse">Processing...</span>
-                    ) : (
-                      'Proceed to Checkout'
-                    )}
-                  </button>
+                  <form onSubmit={handleCheckout} noValidate>
+                    <div className="flex flex-col gap-3 mb-4">
+                      <input
+                        type="text"
+                        autoComplete="name"
+                        placeholder="Full name"
+                        aria-label="Full name"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-900"
+                        required
+                      />
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        placeholder="Email address"
+                        aria-label="Email address"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-900"
+                        required
+                      />
+                      {checkoutError && <p role="alert" className="text-sm text-red-600">{checkoutError}</p>}
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isCheckoutLoading}
+                      className="w-full bg-gray-900 text-white py-4 rounded font-medium hover:bg-gray-800 transition-colors tracking-wide disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isCheckoutLoading ? (
+                        <span className="animate-pulse">Processing...</span>
+                      ) : (
+                        'Place Order'
+                      )}
+                    </button>
+                  </form>
                 </div>
               )}
             </motion.div>
@@ -224,7 +294,7 @@ export default function Header() {
           >
             <div className="flex justify-between items-center mb-12">
               <span className="text-xl font-serif font-bold">Menu</span>
-              <button onClick={() => setIsMobileMenuOpen(false)}>
+              <button type="button" aria-label="Close menu" onClick={() => setIsMobileMenuOpen(false)}>
                 <X size={24} strokeWidth={1.5} />
               </button>
             </div>

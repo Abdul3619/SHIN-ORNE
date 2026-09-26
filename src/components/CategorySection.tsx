@@ -29,7 +29,7 @@ const categories = [
 
 export default function CategorySection() {
   return (
-    <section className="py-24 bg-white">
+    <section id="collections" className="py-24 bg-white scroll-mt-20">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <span className="text-sm font-medium text-gray-500 uppercase tracking-widest mb-2 block">

@@ -12,16 +12,29 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrency] = useState<Currency>(() => {
-    const saved = localStorage.getItem('currency');
-    return (saved as Currency) || 'NGN';
-  });
+  // Start from the default so the server-rendered page and the first browser render match,
+  // then apply the visitor's saved choice.
+  const [currency, setCurrencyState] = useState<Currency>('NGN');
 
   const exchangeRate = 1500; // 1 USD = 1500 NGN (approximate, for demonstration)
 
   useEffect(() => {
-    localStorage.setItem('currency', currency);
-  }, [currency]);
+    try {
+      const saved = localStorage.getItem('currency');
+      if (saved === 'NGN' || saved === 'USD') setCurrencyState(saved);
+    } catch {
+      // Storage can be unavailable (private mode); keep the default.
+    }
+  }, []);
+
+  const setCurrency = (next: Currency) => {
+    setCurrencyState(next);
+    try {
+      localStorage.setItem('currency', next);
+    } catch {
+      // Ignore storage failures; the choice still applies for this visit.
+    }
+  };
 
   const convertPrice = (priceInUSD: number) => {
     if (currency === 'NGN') {

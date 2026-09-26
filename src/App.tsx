@@ -3,24 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { CartProvider } from './context/CartContext';
+import { ProductsProvider } from './context/ProductsContext';
+import type { Product } from './types';
 
-export default function App() {
+// The router is supplied by the caller: BrowserRouter in the browser, StaticRouter on the server.
+export default function App({ initialProducts = null }: { initialProducts?: Product[] | null }) {
   return (
-    <CurrencyProvider>
-      <CartProvider>
-        <Router>
+    <ProductsProvider initialProducts={initialProducts}>
+      <CurrencyProvider>
+        <CartProvider>
           <Routes>
             <Route path="/" element={<Storefront />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
-      </CartProvider>
-    </CurrencyProvider>
+        </CartProvider>
+      </CurrencyProvider>
+    </ProductsProvider>
   );
 }
-
