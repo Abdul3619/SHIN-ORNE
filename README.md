@@ -1,6 +1,6 @@
 # SHIN ORNE by CHARM AURA
 
-Online store for handcrafted beads and jewelry, with an admin dashboard for products and orders.
+I built this online store for Shin Orne by Charm Aura, a handcrafted beads and jewelry brand. Customers browse and order from the shop, and the owner manages products and orders from an admin dashboard.
 
 ## Stack
 

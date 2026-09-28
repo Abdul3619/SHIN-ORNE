@@ -163,7 +163,11 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Shin Orne by Charm Aura. All rights reserved. Reviews shown are sample content.
             <a href="/admin" className="ml-4 hover:text-white transition-colors">Admin Portal</a>
           </p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
+            <span className="text-xs text-gray-500 font-light">
+              Built by Abdulwahab Abdullahi ·{' '}
+              <a href="mailto:abdulwahababdullahi3619@gmail.com" className="hover:text-white transition-colors underline">Contact the developer</a>
+            </span>
             <span className="text-xs text-gray-500 font-light">Currency: {currency}</span>
             <span className="text-xs text-gray-500 font-light">Language: English</span>
           </div>
