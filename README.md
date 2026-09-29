@@ -50,3 +50,15 @@ npm start               # run the production build locally (NODE_ENV=production 
 
 Without the Supabase variables the storefront still loads but shows that products are unavailable; without
 `ADMIN_PASSWORD` and `JWT_SECRET` admin login is disabled.
+
+## Checkout (demo)
+
+`/checkout` has a card form plus Google Pay, Apple Pay and PayPal buttons. **Payment is mocked**: nothing is charged and card details never leave the browser. Orders are still recorded (priced on the server) and show in the admin dashboard as Pending. Ring size and engraving are UI only for now; they appear in the cart and at checkout but are not saved with the order. See the comment at the top of `src/pages/Checkout.tsx` for what a real payment integration needs.
+
+## Policy pages
+
+`/privacy`, `/terms`, `/shipping-returns`, `/size-guide` and `/faq` are generic templates (see `src/pages/InfoPage.tsx`) and need legal review before the store trades.
+
+## Troubleshooting the live site
+
+`GET /api/health` reports `{"database": "ok" | "not_configured" | "unreachable", "adminLogin": true | false}` without exposing any values. `unreachable` usually means the Supabase project is paused (free projects pause after a week of inactivity); restore it from the Supabase dashboard.

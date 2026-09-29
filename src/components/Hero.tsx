@@ -25,8 +25,11 @@ export default function Hero() {
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=1920"
-          alt="Elegant Jewelry Background"
+          src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=75&w=1920"
+          srcSet={[640, 1024, 1440, 1920].map((w) => `https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=75&w=${w} ${w}w`).join(', ')}
+          sizes="100vw"
+          fetchPriority="high"
+          alt=""
           className="w-full h-full object-cover opacity-90"
           referrerPolicy="no-referrer"
         />

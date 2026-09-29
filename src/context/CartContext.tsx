@@ -1,81 +1,83 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { Product } from '../types';
+import { useLocalStorage } from '../lib/useLocalStorage';
 
-interface CartItem {
+// Ring size and engraving are UI only for now (see src/lib/catalogue.ts): they stay in the cart but are not
+// sent with the order.
+export interface CartOptions {
+  ringSize?: string;
+  engraving?: string;
+}
+
+export interface CartItem {
+  key: string;
   product: Product;
   quantity: number;
+  options?: CartOptions;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: Product, options?: CartOptions) => void;
+  removeFromCart: (key: string) => void;
+  updateQuantity: (key: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
+  hydrated: boolean;
+  wishlist: number[];
+  toggleWishlist: (productId: number) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const lineKey = (productId: number, options?: CartOptions) =>
+  [productId, options?.ringSize ?? '', (options?.engraving ?? '').trim()].join('|');
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  // The cart and wishlist are kept in localStorage so they are still there on the next visit.
+  const [cart, setCart, , hydrated] = useLocalStorage<CartItem[]>('shinorne:cart', []);
+  const [wishlist, setWishlist] = useLocalStorage<number[]>('shinorne:wishlist', []);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const addToCart = (product: Product) => {
+  // Drop anything malformed from an older saved cart.
+  useEffect(() => {
+    if (hydrated && !Array.isArray(cart)) setCart([]);
+  }, [hydrated, cart, setCart]);
+
+  const addToCart = (product: Product, options?: CartOptions) => {
+    const key = lineKey(product.id, options);
     setCart((prevCart) => {
-      const existingItem = prevCart.find(item => item.product.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+      const existing = prevCart.find((item) => item.key === key);
+      if (existing) {
+        return prevCart.map((item) => (item.key === key ? { ...item, quantity: Math.min(item.quantity + 1, 99) } : item));
       }
-      return [...prevCart, { product, quantity: 1 }];
+      return [...prevCart, { key, product, quantity: 1, options }];
     });
-    setIsCartOpen(true); // Open cart when item is added
+    setIsCartOpen(true);
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prevCart) => prevCart.filter(item => item.product.id !== productId));
+  const removeFromCart = (key: string) => setCart((prevCart) => prevCart.filter((item) => item.key !== key));
+
+  const updateQuantity = (key: string, quantity: number) => {
+    if (quantity <= 0) return removeFromCart(key);
+    setCart((prevCart) => prevCart.map((item) => (item.key === key ? { ...item, quantity: Math.min(quantity, 99) } : item)));
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCart((prevCart) =>
-      prevCart.map(item =>
-        item.product.id === productId
-          ? { ...item, quantity }
-          : item
-      )
-    );
-  };
+  const clearCart = () => setCart([]);
 
-  const clearCart = () => {
-    setCart([]);
-  };
+  const toggleWishlist = (productId: number) =>
+    setWishlist((prev) => (prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]));
 
-  const cartTotal = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const cartTotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{
-      cart,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      cartTotal,
-      cartCount,
-      isCartOpen,
-      setIsCartOpen
-    }}>
+    <CartContext.Provider
+      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, isCartOpen, setIsCartOpen, hydrated, wishlist, toggleWishlist }}
+    >
       {children}
     </CartContext.Provider>
   );

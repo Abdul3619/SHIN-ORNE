@@ -6,6 +6,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
+import Checkout from './pages/Checkout';
+import InfoPage, { INFO_PAGES } from './pages/InfoPage';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { CartProvider } from './context/CartContext';
 import { ProductsProvider } from './context/ProductsContext';
@@ -20,6 +22,10 @@ export default function App({ initialProducts = null }: { initialProducts?: Prod
           <Routes>
             <Route path="/" element={<Storefront />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/checkout" element={<Checkout />} />
+            {INFO_PAGES.map((slug) => (
+              <Route key={slug} path={`/${slug}`} element={<InfoPage slug={slug} />} />
+            ))}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </CartProvider>
