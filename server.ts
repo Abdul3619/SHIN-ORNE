@@ -299,6 +299,19 @@ app.get("/api/subscribers", authenticateToken, asyncRoute(async (req, res) => {
   res.json(await rpc("shop_list_subscribers"));
 }));
 
+// Reports whether the server is configured, without exposing any values. Useful when the live store misbehaves.
+app.get("/api/health", asyncRoute(async (req, res) => {
+  let database: "ok" | "not_configured" | "unreachable" = db ? "ok" : "not_configured";
+  if (db) {
+    try {
+      await listProducts();
+    } catch {
+      database = "unreachable";
+    }
+  }
+  res.set("Cache-Control", "no-store").json({ database, adminLogin: !!JWT_SECRET });
+}));
+
 app.use("/api", (req, res) => {
   res.status(404).json({ error: "Not found" });
 });
@@ -344,12 +357,14 @@ const loadPage = async (url: string): Promise<{ template: string; render: Render
   return loadProductionPage();
 };
 
-// The storefront is rendered on the server with the current products, so admin changes show up immediately.
-app.get("/", asyncRoute(async (req, res) => {
+// Pages rendered on the server. The storefront gets the current products, so admin changes show up immediately;
+// the checkout and the policy pages (templates, see src/pages/InfoPage.tsx) share the same template.
+const SERVER_RENDERED_PAGES = ["/", "/checkout", "/privacy", "/terms", "/shipping-returns", "/size-guide", "/faq"];
+app.get(SERVER_RENDERED_PAGES, asyncRoute(async (req, res) => {
   const { template, render } = await loadPage(req.originalUrl);
   let products: ProductRow[] | null = null;
   try {
-    products = await listProducts();
+    if (req.path === "/") products = await listProducts();
   } catch (error) {
     // Still serve the page; the browser shows its "could not load" message and retries on refresh.
     console.error("[SSR] Could not load products:", error);
