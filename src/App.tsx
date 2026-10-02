@@ -6,6 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminMagicLink from './pages/AdminMagicLink';
 import Checkout from './pages/Checkout';
 import InfoPage, { INFO_PAGES } from './pages/InfoPage';
 import { CurrencyProvider } from './context/CurrencyContext';
@@ -22,6 +23,7 @@ export default function App({ initialProducts = null }: { initialProducts?: Prod
           <Routes>
             <Route path="/" element={<Storefront />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/magic/:token" element={<AdminMagicLink />} />
             <Route path="/checkout" element={<Checkout />} />
             {INFO_PAGES.map((slug) => (
               <Route key={slug} path={`/${slug}`} element={<InfoPage slug={slug} />} />

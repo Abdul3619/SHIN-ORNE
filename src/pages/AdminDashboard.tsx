@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 
 import type { Product } from '../types';
+import { readStoredToken, storeToken, readError } from '../lib/adminSession';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -23,28 +24,6 @@ interface Order {
   status: string;
   created_at: string;
   items: OrderItem[];
-}
-
-function readStoredToken() {
-  try {
-    return localStorage.getItem('adminToken');
-  } catch {
-    return null;
-  }
-}
-
-function storeToken(token: string | null) {
-  try {
-    if (token) localStorage.setItem('adminToken', token);
-    else localStorage.removeItem('adminToken');
-  } catch {
-    // Storage unavailable: the session lasts until the page is closed.
-  }
-}
-
-async function readError(res: Response, fallback: string) {
-  const data = await res.json().catch(() => ({}));
-  return data.error || fallback;
 }
 
 export default function AdminDashboard() {

@@ -10,6 +10,9 @@ import type { ViteDevServer } from "vite";
 const isProduction = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 const PORT = Number(process.env.PORT) || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
+// Lets the portfolio's AI assistant mint a one-time dashboard login link for a visitor -- see the two
+// /api/admin/magic-link routes below. Never exposed to the browser; only the portfolio server holds it.
+const PORTFOLIO_SERVICE_KEY = process.env.PORTFOLIO_SERVICE_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const MIN_PASSWORD_LENGTH = 8;
@@ -204,6 +207,38 @@ app.post("/api/admin/change-password", authenticateToken, asyncRoute(async (req,
   res.json({ success: true, token: issueToken(sessionVersion) });
 }));
 
+// Mints a one-time, 10-minute login link for the admin dashboard -- only callable by the portfolio's own server
+// (PORTFOLIO_SERVICE_KEY), never by a visitor's browser. The raw token is generated and hashed here; only the
+// hash is ever stored (see shop_magic_link_create / supabase/migrations/20261002140000_shop_magic_links.sql).
+app.post("/api/admin/magic-link", asyncRoute(async (req, res) => {
+  if (!PORTFOLIO_SERVICE_KEY) return res.status(503).json({ error: "Magic links are not configured on this server." });
+  const given = req.headers["x-portfolio-key"];
+  if (given !== PORTFOLIO_SERVICE_KEY) return res.status(401).json({ error: "Unauthorized" });
+  if (!JWT_SECRET) return res.status(503).json({ error: "Admin login is not configured on this server." });
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  await rpc("shop_magic_link_create", { p_token_hash: tokenHash, p_expires_at: expiresAt });
+  res.json({ token: rawToken, expiresAt });
+}));
+
+// Exchanges a one-time link token for a real admin session, the same shape /api/admin/login returns. Public --
+// the visitor's own browser calls this directly -- but the token itself (single-use, 10-minute expiry) is the
+// gate, exactly like Agbada Luxe's equivalent endpoint.
+app.post("/api/admin/magic-link/consume", asyncRoute(async (req, res) => {
+  if (!JWT_SECRET) return res.status(503).json({ error: "Admin login is not configured on this server." });
+  const { token } = req.body ?? {};
+  if (typeof token !== "string" || !token) return res.status(400).json({ error: "Missing token." });
+
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const valid = await rpc<boolean>("shop_magic_link_consume", { p_token_hash: tokenHash });
+  if (!valid) return res.status(401).json({ error: "This link has already been used or has expired." });
+
+  const { session_version } = await getAdminAuth();
+  res.json({ token: issueToken(session_version) });
+}));
+
 // --- API Routes ---
 
 // Products
@@ -375,15 +410,19 @@ app.get(SERVER_RENDERED_PAGES, asyncRoute(async (req, res) => {
   res.status(200).set({ "Content-Type": "text/html", "Cache-Control": "no-store" }).send(html);
 }));
 
-// The admin dashboard renders in the browser only.
-app.get("/admin", asyncRoute(async (req, res) => {
+// The admin dashboard (and its magic-link landing page) render in the browser only.
+const serveAdminShell = asyncRoute(async (req, res) => {
   const { template } = await loadPage(req.originalUrl);
   const html = template
     .replace("<!--app-html-->", "")
     .replace("<!--app-state-->", "")
     .replace('<meta name="robots" content="index, follow" />', '<meta name="robots" content="noindex, nofollow" />');
   res.status(200).set({ "Content-Type": "text/html", "Cache-Control": "no-store" }).send(html);
-}));
+});
+app.get("/admin", serveAdminShell);
+// Its own route (not just a sub-path of "/admin") because the catch-all below redirects anything unrecognized
+// back to "/" rather than falling back to this SPA shell -- so this path needs the same explicit treatment.
+app.get("/admin/magic/:token", serveAdminShell);
 
 // Unknown pages go back to the storefront.
 app.get("*", (req, res) => {
