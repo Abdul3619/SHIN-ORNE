@@ -53,7 +53,7 @@ Without the Supabase variables the storefront still loads but shows that product
 
 ## Checkout (demo)
 
-`/checkout` has a card form plus Google Pay, Apple Pay and PayPal buttons. **Payment is mocked**: nothing is charged and card details never leave the browser. Orders are still recorded (priced on the server) and show in the admin dashboard as Pending. Ring size and engraving are UI only for now; they appear in the cart and at checkout but are not saved with the order. See the comment at the top of `src/pages/Checkout.tsx` for what a real payment integration needs.
+`/checkout` has a card form plus Google Pay, Apple Pay and PayPal buttons. **Payment is mocked**: nothing is charged and card details never leave the browser. Orders are still recorded (priced on the server) and show in the admin dashboard as Pending, along with each line's ring size and engraving text when set. See the comment at the top of `src/pages/Checkout.tsx` for what a real payment integration needs.
 
 ## Policy pages
 

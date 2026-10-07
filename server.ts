@@ -300,7 +300,12 @@ app.post("/api/orders", asyncRoute(async (req, res) => {
     const rows = await rpc<{ id: number; total: number }[]>("shop_create_order", {
       p_customer_name: name,
       p_customer_email: email,
-      p_items: items.map((item: any) => ({ id: item.id, quantity: item.quantity })),
+      p_items: items.map((item: any) => ({
+        id: item.id,
+        quantity: item.quantity,
+        ringSize: typeof item.ringSize === "string" ? item.ringSize.slice(0, 20) : null,
+        engraving: typeof item.engraving === "string" ? item.engraving.slice(0, 60) : null,
+      })),
     });
     res.status(201).json(rows[0]);
   } catch (error: any) {

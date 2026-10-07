@@ -120,7 +120,12 @@ export default function Checkout() {
         body: JSON.stringify({
           customer_name: details.name.trim(),
           customer_email: details.email.trim(),
-          items: cart.map((item) => ({ id: item.product.id, quantity: item.quantity })),
+          items: cart.map((item) => ({
+            id: item.product.id,
+            quantity: item.quantity,
+            ringSize: item.options?.ringSize,
+            engraving: item.options?.engraving,
+          })),
         }),
       });
       const data = await res.json().catch(() => ({}));

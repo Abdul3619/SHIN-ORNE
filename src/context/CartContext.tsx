@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import type { Product } from '../types';
 import { useLocalStorage } from '../lib/useLocalStorage';
 
-// Ring size and engraving are UI only for now (see src/lib/catalogue.ts): they stay in the cart but are not
-// sent with the order.
+// Ring size and engraving, if set, travel with the order through to /api/orders and the admin
+// dashboard (see Checkout.tsx and shop_create_order).
 export interface CartOptions {
   ringSize?: string;
   engraving?: string;

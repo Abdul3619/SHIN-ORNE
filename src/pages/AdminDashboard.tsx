@@ -14,6 +14,8 @@ interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  ringSize?: string | null;
+  engraving?: string | null;
 }
 
 interface Order {
@@ -479,7 +481,14 @@ export default function AdminDashboard() {
                         <p className="text-xs text-gray-500">{order.customer_email}</p>
                         {order.items.length > 0 && (
                           <p className="text-xs text-gray-500 mt-1">
-                            {order.items.map(item => `${item.quantity} × ${item.name}`).join(', ')}
+                            {order.items.map((item, i) => (
+                              <span key={i}>
+                                {i > 0 && ', '}
+                                {item.quantity} × {item.name}
+                                {item.ringSize && ` (size ${item.ringSize})`}
+                                {item.engraving && ` — engrave "${item.engraving}"`}
+                              </span>
+                            ))}
                           </p>
                         )}
                       </td>
