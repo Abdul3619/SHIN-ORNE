@@ -3,28 +3,28 @@ import { unsplashUrl } from '../lib/catalogue';
 
 const LOOKS = [
   {
-    image: 'photo-1515562141207-7a88fb7ce338',
+    image: 'photo-1620656798579-1984d9e87df7',
     title: 'Everyday Radiance',
     collectionHref: '/#necklaces',
     span: 'lg:col-span-2 lg:row-span-2',
     aspect: 'aspect-[4/5] lg:aspect-auto',
   },
   {
-    image: 'photo-1599643477877-530eb83abc8e',
+    image: 'photo-1626122780071-c09d403b8e32',
     title: 'Stacked Rings',
     collectionHref: '/#rings',
     span: '',
     aspect: 'aspect-[4/5]',
   },
   {
-    image: 'photo-1535632066927-ab7c9ab60908',
+    image: 'photo-1701777892740-88419a701472',
     title: 'Statement Earrings',
     collectionHref: '/#earrings',
     span: '',
     aspect: 'aspect-[4/5]',
   },
   {
-    image: 'photo-1611085583191-a3b181a88401',
+    image: 'photo-1605100804763-247f67b3557e',
     title: 'For the Aisle',
     collectionHref: '/#bridal',
     span: 'lg:col-span-2',

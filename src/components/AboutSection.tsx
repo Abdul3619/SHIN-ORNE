@@ -15,8 +15,8 @@ export default function AboutSection() {
           >
             <div className="aspect-[4/5] relative overflow-hidden rounded-sm">
               <img
-                src="https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&q=75&w=800"
-                srcSet={[480, 800, 1200].map((w) => `https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&q=75&w=${w} ${w}w`).join(', ')}
+                src="https://images.unsplash.com/photo-1786840320404-4c1c26980075?auto=format&fit=crop&q=75&w=800"
+                srcSet={[480, 800, 1200].map((w) => `https://images.unsplash.com/photo-1786840320404-4c1c26980075?auto=format&fit=crop&q=75&w=${w} ${w}w`).join(', ')}
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 loading="lazy"
                 decoding="async"

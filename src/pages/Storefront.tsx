@@ -19,7 +19,7 @@ export default function Storefront() {
         <FeaturesBar />
         <CategorySection />
         <PromoBanner
-          image="photo-1611085583191-a3b181a88401"
+          image="photo-1605100804763-247f67b3557e"
           eyebrow="Bridal & Engagement"
           heading="For the Day You'll Remember Forever"
           subtext="Rings and sets built to carry a story, finished by hand and sized to fit."
@@ -31,7 +31,7 @@ export default function Storefront() {
         <LookbookSection />
         <AboutSection />
         <PromoBanner
-          image="photo-1535632066927-ab7c9ab60908"
+          image="photo-1780744871777-fec13139d281"
           eyebrow="Gifting"
           heading="Give a Piece Worth Keeping"
           subtext="Every order ships in signature gift packaging, ready to hand over just as it arrives."

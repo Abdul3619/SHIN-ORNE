@@ -3,11 +3,11 @@ import type { Product } from '../types';
 // Collections shown on the storefront. `match` lists the product categories (as entered in the admin
 // dashboard) that belong to each collection.
 export const COLLECTIONS = [
-  { slug: 'rings', name: 'Rings', match: ['rings'], image: 'photo-1599643477877-530eb83abc8e' },
-  { slug: 'necklaces', name: 'Necklaces', match: ['necklaces', 'sets'], image: 'photo-1515562141207-7a88fb7ce338' },
-  { slug: 'earrings', name: 'Earrings', match: ['earrings'], image: 'photo-1535632066927-ab7c9ab60908' },
-  { slug: 'bracelets', name: 'Bracelets', match: ['bracelets'], image: 'photo-1611591437281-460bfbe1220a' },
-  { slug: 'bridal', name: 'Bridal & Engagement', match: ['bridal', 'bridal & engagement', 'engagement'], image: 'photo-1611085583191-a3b181a88401' },
+  { slug: 'rings', name: 'Rings', match: ['rings'], image: 'photo-1626122780071-c09d403b8e32' },
+  { slug: 'necklaces', name: 'Necklaces', match: ['necklaces', 'sets'], image: 'photo-1620656798579-1984d9e87df7' },
+  { slug: 'earrings', name: 'Earrings', match: ['earrings'], image: 'photo-1701777892740-88419a701472' },
+  { slug: 'bracelets', name: 'Bracelets', match: ['bracelets'], image: 'photo-1573446238824-c28afa0cd312' },
+  { slug: 'bridal', name: 'Bridal & Engagement', match: ['bridal', 'bridal & engagement', 'engagement'], image: 'photo-1605100804763-247f67b3557e' },
 ] as const;
 
 export type CollectionSlug = (typeof COLLECTIONS)[number]['slug'];

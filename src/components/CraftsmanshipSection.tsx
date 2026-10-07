@@ -40,8 +40,8 @@ export default function CraftsmanshipSection() {
           >
             <div className="aspect-[4/5] relative overflow-hidden rounded-sm">
               <img
-                src={unsplashUrl('photo-1611591437281-460bfbe1220a', 800)}
-                srcSet={[480, 800, 1200].map((w) => `${unsplashUrl('photo-1611591437281-460bfbe1220a', w)} ${w}w`).join(', ')}
+                src={unsplashUrl('photo-1778077128762-594e292467a2', 800)}
+                srcSet={[480, 800, 1200].map((w) => `${unsplashUrl('photo-1778077128762-594e292467a2', w)} ${w}w`).join(', ')}
                 sizes="(min-width: 1024px) 40vw, 100vw"
                 loading="lazy"
                 decoding="async"
