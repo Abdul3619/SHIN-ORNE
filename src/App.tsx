@@ -8,6 +8,7 @@ import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminMagicLink from './pages/AdminMagicLink';
 import Checkout from './pages/Checkout';
+import DesignPreview from './pages/DesignPreview';
 import InfoPage, { INFO_PAGES } from './pages/InfoPage';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { CartProvider } from './context/CartContext';
@@ -25,6 +26,7 @@ export default function App({ initialProducts = null }: { initialProducts?: Prod
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/magic/:token" element={<AdminMagicLink />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/design-preview" element={<DesignPreview />} />
             {INFO_PAGES.map((slug) => (
               <Route key={slug} path={`/${slug}`} element={<InfoPage slug={slug} />} />
             ))}

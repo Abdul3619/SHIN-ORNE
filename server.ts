@@ -423,6 +423,9 @@ app.get("/admin", serveAdminShell);
 // Its own route (not just a sub-path of "/admin") because the catch-all below redirects anything unrecognized
 // back to "/" rather than falling back to this SPA shell -- so this path needs the same explicit treatment.
 app.get("/admin/magic/:token", serveAdminShell);
+// Design-direction proof page (docs/design-reference/) -- browser-rendered only, noindex'd, same
+// shell as admin. Not linked from the real storefront.
+app.get("/design-preview", serveAdminShell);
 
 // Unknown pages go back to the storefront.
 app.get("*", (req, res) => {
