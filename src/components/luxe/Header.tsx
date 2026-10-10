@@ -42,6 +42,25 @@ export default function Header({ solid = false }: { solid?: boolean }) {
     };
   }, [menu]);
 
+  // Scroll-spy: highlight the nav link of the section currently in view (home page only).
+  const [active, setActive] = useState('');
+  useEffect(() => {
+    if (window.location.pathname !== '/') return;
+    const ids = NAV.map((n) => n.href.split('#')[1]);
+    const els = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    if (!els.length || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    els.forEach((el) => io.observe(el));
+    const top = () => { if (window.scrollY < 200) setActive(''); };
+    window.addEventListener('scroll', top, { passive: true });
+    return () => { io.disconnect(); window.removeEventListener('scroll', top); };
+  }, []);
+
   const count = hydrated ? cartCount : 0;
   const saved = hydrated ? wishlist.length : 0;
 
@@ -55,7 +74,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
           </Link>
           <nav className="lx-nav" aria-label="Main">
             {NAV.map((n) => (
-              <a key={n.label} href={n.href}>{n.label}</a>
+              <Link key={n.label} to={n.href} className={active === n.href.split('#')[1] ? 'is-current' : undefined} aria-current={active === n.href.split('#')[1] ? 'true' : undefined}>{n.label}</Link>
             ))}
           </nav>
           <div className="lx-actions">
@@ -95,7 +114,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
           </div>
           <nav aria-label="Mobile">
             {NAV.map((n) => (
-              <a key={n.label} href={n.href} onClick={() => setMenu(false)}>{n.label}</a>
+              <Link key={n.label} to={n.href} onClick={() => setMenu(false)}>{n.label}</Link>
             ))}
             <Link to="/faq" onClick={() => setMenu(false)}>FAQ</Link>
           </nav>

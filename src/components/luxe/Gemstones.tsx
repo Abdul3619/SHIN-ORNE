@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { useProducts } from '../../context/ProductsContext';
 import { useShop } from '../../context/ShopContext';
 import { GEMS, matchByWords } from '../../lib/catalogue';
-import GemIcon from './GemIcon';
+import GemPhoto from './GemPhoto';
 
 export default function Gemstones() {
   const [key, setKey] = useState<string>(GEMS[0].key);
@@ -24,13 +24,17 @@ export default function Gemstones() {
         <div className="lx-gems" role="tablist" aria-label="Gemstones">
           {GEMS.map((g) => (
             <button key={g.key} type="button" role="tab" aria-selected={g.key === key} className={`lx-gem${g.key === key ? ' is-on' : ''}`} onClick={() => setKey(g.key)}>
-              <GemIcon gem={g} />
+              <GemPhoto gem={g} className="lx-gem-thumb" />
               <b>{g.name}</b>
               <span>{g.mood}</span>
             </button>
           ))}
         </div>
         <div className="lx-glass lx-gem-story" role="tabpanel" aria-live="polite">
+          <div className="lx-gem-stage" key={gem.key} style={{ ['--gem-glow' as string]: gem.glow }}>
+            <GemPhoto gem={gem} eager className="lx-gem-hero" />
+            <i className="lx-gem-floor" aria-hidden="true" />
+          </div>
           <div>
             <span className="lx-eyebrow" style={{ marginBottom: 8 }}>{gem.mood}</span>
             <h3>{gem.name}</h3>
@@ -42,13 +46,16 @@ export default function Gemstones() {
                 : `We do not have a ${gem.name.toLowerCase()} piece in stock right now. Browse the rings instead.`}
             </p>
           </div>
-          <button
+          <div className="lx-gem-cta">
+            <button
             type="button"
             className="lx-btn lx-btn--solid"
             onClick={() => (matches.length ? browse({ query: gem.words.join('|') }) : browse({ collection: 'rings' }))}
           >
             {matches.length ? `Shop ${similar ? 'the closest' : gem.name} pieces` : 'Shop rings'} <ArrowRight size={15} aria-hidden="true" />
-          </button>
+            </button>
+            <small className="lx-credit">Photo: {gem.credit} / Unsplash. Illustrative stone.</small>
+          </div>
         </div>
       </div>
     </section>

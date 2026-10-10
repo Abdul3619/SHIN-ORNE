@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { useCart } from '../../context/CartContext';
-import SilkFlow from './SilkFlow';
+import SilkCanvas from './SilkCanvas';
 import Header from './Header';
 import BagDrawer from './BagDrawer';
 import WishlistDrawer from './WishlistDrawer';
@@ -17,7 +17,7 @@ export default function Shell({ children, solidHeader = false, ribbon = true }: 
   return (
     <div className="lx">
       <div className="lx-atmos" aria-hidden="true" />
-      {ribbon && <div className="lx-flow"><SilkFlow /></div>}
+      {ribbon && <div className="lx-flow"><SilkCanvas /></div>}
       <Header solid={solidHeader} />
       <main className="lx-main">{children}</main>
       <Footer />

@@ -22,7 +22,15 @@ import type { Product } from './types';
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    if (!hash) window.scrollTo(0, 0);
+    if (!hash) { window.scrollTo(0, 0); return; }
+    // Land on the anchor once the new page has rendered it.
+    let tries = 0;
+    const go = () => {
+      const el = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (tries++ < 20) setTimeout(go, 100);
+    };
+    go();
   }, [pathname, hash]);
   return null;
 }

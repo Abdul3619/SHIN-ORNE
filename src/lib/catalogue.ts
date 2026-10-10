@@ -51,12 +51,12 @@ export const CATEGORY_BLURB: Record<string, string> = {
 };
 
 export const GEMS = [
-  { key: 'diamond', name: 'Diamond', mood: 'Timeless', color: '#e8f1ff', color2: '#9fb6d6', glow: 'rgba(210,228,255,.55)', words: ['diamond', 'solstice', 'aurora', 'halo', 'crystal'], story: 'The hardest natural stone, chosen for engagements because it is built to outlast the promise.', facts: ['Mohs 10', 'April', 'Engagement classic'] },
-  { key: 'sapphire', name: 'Sapphire', mood: 'Wisdom', color: '#3d63e0', color2: '#16286e', glow: 'rgba(80,120,255,.55)', words: ['sapphire'], story: 'Deep blue and quietly regal, a favourite for those who want colour without losing elegance.', facts: ['Mohs 9', 'September', 'Royal blue'] },
-  { key: 'emerald', name: 'Emerald', mood: 'Renewal', color: '#27b887', color2: '#0b5a40', glow: 'rgba(40,200,140,.5)', words: ['emerald'], story: 'A green that reads as spring, prized for its depth and the soft inclusions that make each stone its own.', facts: ['Mohs 7.5–8', 'May', 'Garden green'] },
-  { key: 'ruby', name: 'Ruby', mood: 'Passion', color: '#e0334f', color2: '#6f0a22', glow: 'rgba(240,60,90,.55)', words: ['ruby'], story: 'The colour of devotion. A ruby is a statement piece that warms everything it sits against.', facts: ['Mohs 9', 'July', 'Pigeon blood'] },
-  { key: 'morganite', name: 'Morganite', mood: 'Love', color: '#f5b4a8', color2: '#c4776a', glow: 'rgba(255,170,150,.5)', words: ['pearl', 'rose'], story: 'A blush pink stone for romantics. We pair it with rose gold for a gentle, modern engagement look.', facts: ['Mohs 7.5–8', 'Rose blush', 'Rose-gold pairing'], similar: true },
-  { key: 'tanzanite', name: 'Tanzanite', mood: 'Transformation', color: '#8a62e8', color2: '#35208a', glow: 'rgba(140,100,255,.55)', words: ['amethyst'], story: 'Violet shifting to blue as the light moves. Our nearest piece in the collection is the Amethyst Ring.', facts: ['Mohs 6.5', 'December', 'Violet-blue'], similar: true },
+  { key: 'diamond', photo: 'photo-1702149001693-67ca09997ecc', credit: 'A Chosen Soul', tol: 58, name: 'Diamond', mood: 'Timeless', color: '#e8f1ff', color2: '#9fb6d6', glow: 'rgba(210,228,255,.55)', words: ['diamond', 'solstice', 'aurora', 'halo', 'crystal'], story: 'The hardest natural stone, chosen for engagements because it is built to outlast the promise.', facts: ['Mohs 10', 'April', 'Engagement classic'] },
+  { key: 'sapphire', photo: 'photo-1613843351058-1dd06fda7c02', credit: 'Jacek Dylag', tol: 44, name: 'Sapphire', mood: 'Wisdom', color: '#3d63e0', color2: '#16286e', glow: 'rgba(80,120,255,.55)', words: ['sapphire'], story: 'Deep blue and quietly regal, a favourite for those who want colour without losing elegance.', facts: ['Mohs 9', 'September', 'Royal blue'] },
+  { key: 'emerald', photo: 'photo-1678245687839-231ed039a18b', credit: 'Kier in Sight Archives', tol: 40, name: 'Emerald', mood: 'Renewal', color: '#27b887', color2: '#0b5a40', glow: 'rgba(40,200,140,.5)', words: ['emerald'], story: 'A green that reads as spring, prized for its depth and the soft inclusions that make each stone its own.', facts: ['Mohs 7.5–8', 'May', 'Garden green'] },
+  { key: 'ruby', photo: 'photo-1551122102-63cd339bfaab', credit: 'Jason D', tol: 44, name: 'Ruby', mood: 'Passion', color: '#e0334f', color2: '#6f0a22', glow: 'rgba(240,60,90,.55)', words: ['ruby'], story: 'The colour of devotion. A ruby is a statement piece that warms everything it sits against.', facts: ['Mohs 9', 'July', 'Pigeon blood'] },
+  { key: 'morganite', photo: 'photo-1679531751641-79f78cbb5c0b', credit: 'Wim Hovens', tol: 44, name: 'Morganite', mood: 'Love', color: '#f5b4a8', color2: '#c4776a', glow: 'rgba(255,170,150,.5)', words: ['pearl', 'rose'], story: 'A blush pink stone for romantics. We pair it with rose gold for a gentle, modern engagement look.', facts: ['Mohs 7.5–8', 'Rose blush', 'Rose-gold pairing'], similar: true },
+  { key: 'tanzanite', photo: 'photo-1605821771565-35e0d046a2fb', credit: 'Sabrianna', tol: 44, name: 'Tanzanite', mood: 'Transformation', color: '#8a62e8', color2: '#35208a', glow: 'rgba(140,100,255,.55)', words: ['amethyst'], story: 'Violet shifting to blue as the light moves. Our nearest piece in the collection is the Amethyst Ring.', facts: ['Mohs 6.5', 'December', 'Violet-blue'], similar: true },
 ] as const;
 export type Gem = (typeof GEMS)[number];
 
@@ -85,6 +85,10 @@ export const ENGRAVING_MAX = 20;
 
 // Unsplash photos can be resized on request (and served as AVIF/WebP with auto=format), so product images
 // hosted there get a responsive srcset. Other image URLs are used as they are.
+export function gemSource(photoId: string) {
+  return `https://images.unsplash.com/${photoId}?auto=format&fit=max&q=80&w=900`;
+}
+
 export function unsplashUrl(id: string, width: number) {
   return `https://images.unsplash.com/${id}?auto=format&fit=crop&q=75&w=${width}`;
 }
