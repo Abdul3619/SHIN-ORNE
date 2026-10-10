@@ -68,20 +68,20 @@ function GiftBox() {
     <div className="lx-box" aria-hidden="true">
       <svg viewBox="0 0 150 150">
         <defs>
-          <linearGradient id="gb-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fbeab0" /><stop offset="50%" stopColor="#d9b04a" /><stop offset="100%" stopColor="#8a6416" /></linearGradient>
+          <linearGradient id="gb-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffe4eb" /><stop offset="50%" stopColor="#eda0b5" /><stop offset="100%" stopColor="#a8566e" /></linearGradient>
         </defs>
         <g className="ring">
           <circle cx="75" cy="60" r="16" fill="none" stroke="url(#gb-gold)" strokeWidth="5" />
           <path d="M67 46 L75 34 L83 46 Z" fill="#e8f1ff" stroke="#fff" strokeWidth="1" />
         </g>
-        <rect x="22" y="70" width="106" height="64" rx="6" fill="#1b140b" stroke="url(#gb-gold)" strokeWidth="2" />
+        <rect x="22" y="70" width="106" height="64" rx="6" fill="#1d0f1f" stroke="url(#gb-gold)" strokeWidth="2" />
         <rect x="68" y="70" width="14" height="64" fill="url(#gb-gold)" />
         <g className="lid">
-          <rect x="16" y="52" width="118" height="22" rx="5" fill="#241a0d" stroke="url(#gb-gold)" strokeWidth="2" />
+          <rect x="16" y="52" width="118" height="22" rx="5" fill="#2a1430" stroke="url(#gb-gold)" strokeWidth="2" />
           <rect x="68" y="52" width="14" height="22" fill="url(#gb-gold)" />
         </g>
-        <g className="spark" stroke="#fff6da" strokeWidth="2" strokeLinecap="round"><path d="M110 24 v14 M103 31 h14" /></g>
-        <g className="spark" stroke="#fff6da" strokeWidth="2" strokeLinecap="round" style={{ animationDelay: '2s' }}><path d="M36 30 v10 M31 35 h10" /></g>
+        <g className="spark" stroke="#fff0f5" strokeWidth="2" strokeLinecap="round"><path d="M110 24 v14 M103 31 h14" /></g>
+        <g className="spark" stroke="#fff0f5" strokeWidth="2" strokeLinecap="round" style={{ animationDelay: '2s' }}><path d="M36 30 v10 M31 35 h10" /></g>
       </svg>
     </div>
   );

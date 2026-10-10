@@ -46,7 +46,7 @@ export default function Bridal() {
           <img src={unsplashUrl(hero, 1600)} srcSet={[800, 1200, 1800].map((w) => `${unsplashUrl(hero, w)} ${w}w`).join(', ')} sizes="100vw" alt="" loading="lazy" referrerPolicy="no-referrer" />
           <div className="lx-bridal-copy">
             <span className="lx-eyebrow">Bridal &amp; Engagement</span>
-            <h2 id="bridal-h" className="lx-h2" style={{ color: '#fbf3e2' }}>For the day you will <em style={{ color: '#ecca70' }}>remember forever</em></h2>
+            <h2 id="bridal-h" className="lx-h2" style={{ color: '#fff0f5' }}>For the day you will <em style={{ color: '#ff9fba' }}>remember forever</em></h2>
             <p className="lx-lede">Engagement rings, wedding bands and matching sets, finished by hand, sized to the finger and engraved with the words only the two of you know.</p>
             <div className="lx-cta-row">
               <a className="lx-btn lx-btn--solid" href="#bridal-planner">Plan your ring <ArrowRight size={15} aria-hidden="true" /></a>

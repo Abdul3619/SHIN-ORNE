@@ -20,9 +20,9 @@ export default function Gifting() {
           <img src={unsplashUrl(IMG, 1600)} srcSet={[800, 1200, 1800].map((w) => `${unsplashUrl(IMG, w)} ${w}w`).join(', ')} sizes="100vw" alt="" loading="lazy" referrerPolicy="no-referrer" />
           <div>
             <span className="lx-eyebrow">Gifting</span>
-            <h2 id="gift-h" className="lx-h2">Give a piece <em style={{ color: '#ecca70' }}>worth keeping</em></h2>
+            <h2 id="gift-h" className="lx-h2">Give a piece <em style={{ color: '#ff9fba' }}>worth keeping</em></h2>
             <p className="lx-lede">Every order arrives in a signature gift box, ready to hand over just as it comes. Start with what you would like to spend.</p>
-            <a href="/size-guide" className="lx-link" style={{ color: '#fbf3e2', borderColor: '#ecca70' }}>Not sure of the size? Read the size guide</a>
+            <a href="/size-guide" className="lx-link" style={{ color: '#fff0f5', borderColor: '#ff9fba' }}>Not sure of the size? Read the size guide</a>
           </div>
           <div className="lx-budget">
             {BUDGETS.map((b) => (

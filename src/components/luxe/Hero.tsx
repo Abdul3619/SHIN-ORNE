@@ -5,6 +5,7 @@ import { useProducts } from '../../context/ProductsContext';
 import { useShop } from '../../context/ShopContext';
 import { GEMS, unsplashUrl } from '../../lib/catalogue';
 import GemIcon from './GemIcon';
+import SilkFlow from './SilkFlow';
 
 const SLIDES = [
   { image: 'photo-1788495545073-51161449ca9e', eyebrow: 'Bridal & Engagement', title: 'More than jewelry,', em: "it's your story", text: 'Engagement rings and wedding bands, finished by hand, sized to the finger and engraved with the words that matter.', piece: 'Aurora Halo Engagement Ring', material: 'Gold finish · Halo setting', cta: { label: 'Explore bridal', href: '/#bridal' } },
@@ -52,6 +53,7 @@ export default function Hero() {
         </div>
       ))}
       <div className="lx-rays" aria-hidden="true" />
+      <SilkFlow variant="hero" />
       <div className="lx-gem-float" style={{ top: '16%', right: '30%', ['--r' as string]: '-12deg' }} aria-hidden="true"><GemIcon gem={GEMS[0]} size={64} /></div>
       <div className="lx-gem-float" style={{ bottom: '24%', right: '12%', animationDelay: '-3s', ['--r' as string]: '18deg' }} aria-hidden="true"><GemIcon gem={GEMS[1]} size={46} /></div>
       <div className="lx-gem-float" style={{ top: '30%', left: '52%', animationDelay: '-5s', opacity: 0.8, ['--r' as string]: '30deg' }} aria-hidden="true"><GemIcon gem={GEMS[4]} size={34} /></div>
