@@ -51,9 +51,13 @@ npm start               # run the production build locally (NODE_ENV=production 
 Without the Supabase variables the storefront still loads but shows that products are unavailable; without
 `ADMIN_PASSWORD` and `JWT_SECRET` admin login is disabled.
 
+## Design and storefront
+
+The storefront uses a hand-written design system (`src/luxe.css`, `lx-*` classes) with a dark default and a light theme (toggle in the header, remembered in the browser). Sections: hero carousel, collections, Bridal & Engagement (rail plus a two-question planner), Ring Atelier (pick a piece, size and engraving with a live preview), Craft (process and ring sizer), Gemstones, Style finder, full Shop (filters, search, sort), Gifting (budget filters), Stories and About. The bag, wishlist and search are drawers/overlays. The style finder is rule-based, not AI; reviews and best-seller tags are labelled samples; photos are Unsplash stock.
+
 ## Checkout (demo)
 
-`/checkout` has a card form plus Google Pay, Apple Pay and PayPal buttons. **Payment is mocked**: nothing is charged and card details never leave the browser. Orders are still recorded (priced on the server) and show in the admin dashboard as Pending, along with each line's ring size and engraving text when set. See the comment at the top of `src/pages/Checkout.tsx` for what a real payment integration needs.
+`/checkout` is a three-step journey: Details, Delivery, Payment. Standard delivery is free; express costs $15 and is free from $300 (a design choice, change `FREE_EXPRESS_FROM_USD` in `src/lib/catalogue.ts`). The payment step has Google Pay, Apple Pay and PayPal buttons plus a card form. **Payment is mocked**: nothing is charged and card details never leave the browser. Orders are still recorded (priced on the server) and show in the admin dashboard as Pending, along with each line's ring size and engraving text when set. See the comment at the top of `src/pages/Checkout.tsx` for what a real payment integration needs.
 
 ## Policy pages
 

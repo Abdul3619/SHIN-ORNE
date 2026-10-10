@@ -8,7 +8,16 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="description" content="Shin Orne by Charm Aura: handcrafted beads and timeless jewelry. Shop necklaces, bracelets, earrings and bead sets." />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#F9F7F2" />
+    <meta name="theme-color" content="#090705" />
+    <script>
+      // Apply the saved (or default dark) theme before first paint so the page never flashes the wrong one.
+      try {
+        var t = localStorage.getItem('shinorne-theme');
+        if (t !== 'light') document.documentElement.classList.add('dark');
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="SHIN ORNE by CHARM AURA" />
     <meta property="og:title" content="SHIN ORNE by CHARM AURA | Handcrafted Beads &amp; Jewelry" />

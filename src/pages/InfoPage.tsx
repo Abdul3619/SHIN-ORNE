@@ -3,20 +3,12 @@
 // and adapted (business name, address, governing law, real policies) before the store trades.
 import { useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Shell from '../components/luxe/Shell';
 import IllustrativeBadge from '../components/IllustrativeBadge';
-import { RING_SIZES } from '../lib/catalogue';
+import { RING_SIZES, RING_TABLE } from '../lib/catalogue';
 
 export const INFO_PAGES = ['privacy', 'terms', 'shipping-returns', 'size-guide', 'faq'] as const;
 export type InfoSlug = (typeof INFO_PAGES)[number];
-
-// UK ring sizes with approximate inside diameter and circumference (mm), and US equivalents.
-const RING_TABLE: Record<string, [number, number, string]> = {
-  H: [15.2, 47.8, '4'], I: [15.6, 49.0, '4½'], J: [16.0, 50.3, '5'], K: [16.4, 51.5, '5½'], L: [16.8, 52.8, '6'],
-  M: [17.2, 54.0, '6½'], N: [17.6, 55.3, '7'], O: [18.0, 56.6, '7½'], P: [18.4, 57.8, '8'], Q: [18.8, 59.1, '8½'],
-  R: [19.2, 60.3, '9'], S: [19.6, 61.6, '9½'], T: [20.0, 62.8, '10'],
-};
 
 const FAQ: [string, string][] = [
   ['What are your pieces made from?', 'Our beads are glass, crystal and natural stone, strung on coated wire. Metal findings are gold- or silver-plated brass unless a listing says otherwise.'],
@@ -29,9 +21,9 @@ const FAQ: [string, string][] = [
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="mb-10">
-      <h2 className="text-2xl font-serif mb-3">{title}</h2>
-      <div className="space-y-3 text-gray-800 leading-relaxed">{children}</div>
+    <section>
+      <h2>{title}</h2>
+      <div>{children}</div>
     </section>
   );
 }
@@ -99,24 +91,24 @@ const PAGES: Record<InfoSlug, { title: string; body: ReactNode }> = {
       <>
         <Section title="Rings">
           <p>Measure the inside diameter of a ring that fits the intended finger, or wrap a strip of paper around the finger and measure the circumference. Match it to the nearest size below; if between sizes, choose the larger.</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-gray-200 bg-white">
-              <caption className="sr-only">Ring size conversion</caption>
-              <thead className="bg-gray-50">
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <caption style={{ position: "absolute", left: -9999 }}>Ring size conversion</caption>
+              <thead>
                 <tr>
-                  <th scope="col" className="text-left px-4 py-2">UK</th>
-                  <th scope="col" className="text-left px-4 py-2">US</th>
-                  <th scope="col" className="text-left px-4 py-2">Diameter (mm)</th>
-                  <th scope="col" className="text-left px-4 py-2">Circumference (mm)</th>
+                  <th scope="col">UK</th>
+                  <th scope="col">US</th>
+                  <th scope="col">Diameter (mm)</th>
+                  <th scope="col">Circumference (mm)</th>
                 </tr>
               </thead>
               <tbody>
                 {RING_SIZES.map((s) => (
-                  <tr key={s} className="border-t border-gray-100">
-                    <th scope="row" className="text-left px-4 py-2 font-medium">{s}</th>
-                    <td className="px-4 py-2">{RING_TABLE[s][2]}</td>
-                    <td className="px-4 py-2">{RING_TABLE[s][0]}</td>
-                    <td className="px-4 py-2">{RING_TABLE[s][1]}</td>
+                  <tr key={s}>
+                    <th scope="row">{s}</th>
+                    <td>{RING_TABLE[s][2]}</td>
+                    <td>{RING_TABLE[s][0]}</td>
+                    <td>{RING_TABLE[s][1]}</td>
                   </tr>
                 ))}
               </tbody>
@@ -135,14 +127,14 @@ const PAGES: Record<InfoSlug, { title: string; body: ReactNode }> = {
   faq: {
     title: 'Frequently Asked Questions',
     body: (
-      <div className="divide-y divide-gray-200 border-y border-gray-200">
+      <div>
         {FAQ.map(([q, a]) => (
-          <details key={q} className="group py-4">
-            <summary className="cursor-pointer list-none flex justify-between items-center gap-4 font-medium text-gray-900">
+          <details key={q}>
+            <summary>
               {q}
-              <span aria-hidden="true" className="text-xl transition-transform group-open:rotate-45">+</span>
+              <span aria-hidden="true">+</span>
             </summary>
-            <p className="mt-3 text-gray-800 leading-relaxed">{a}</p>
+            <p>{a}</p>
           </details>
         ))}
       </div>
@@ -157,21 +149,19 @@ export default function InfoPage({ slug }: { slug: InfoSlug }) {
   }, [page.title]);
 
   return (
-    <div className="font-sans text-gray-900 antialiased bg-[#F9F7F2] min-h-screen">
-      <Header solid />
-      <main className="pt-32 pb-24">
-        <article className="container mx-auto px-6 max-w-3xl">
-          <nav aria-label="Breadcrumb" className="text-sm text-gray-700 mb-6">
-            <Link to="/" className="underline">Home</Link> <span aria-hidden="true">/</span> {page.title}
+    <Shell solidHeader ribbon={false}>
+      <main className="lx-section" style={{ paddingTop: 140, paddingBottom: 96 }}>
+        <article className="lx-wrap"><div className="lx-prose">
+          <nav aria-label="Breadcrumb" className="lx-crumbs">
+            <Link to="/">Home</Link> <span aria-hidden="true">/</span> {page.title}
           </nav>
-          <h1 className="text-4xl md:text-5xl font-serif mb-4">{page.title}</h1>
-          <p className="mb-10 text-gray-700 flex flex-wrap items-center gap-2">
+          <h1>{page.title}</h1>
+          <p className="lx-note">
             <IllustrativeBadge label="Template" /> Generic template text for this demo store, pending legal review.
           </p>
           {page.body}
-        </article>
+        </div></article>
       </main>
-      <Footer />
-    </div>
+    </Shell>
   );
 }
